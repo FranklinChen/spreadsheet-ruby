@@ -19,7 +19,7 @@ module Spreadsheet
     def exp
       Exp.new -> {
         if @value.equal?(Unevaluated)
-          v, ds = @code.call
+          v, ds = @code.force
 
           @value = v
           @reads = ds
@@ -66,7 +66,7 @@ module Spreadsheet
     end
 
     # Warning: only used internally!!
-    def call
+    def force
       @thunk.call
     end
 
@@ -79,15 +79,15 @@ module Spreadsheet
     # instead. There should be no confusion with greater-than-or-equal.
     def >=(f)
       Exp.new -> {
-        a, cs = @thunk.call
-        b, ds = f.call(a).call
+        a, cs = force
+        b, ds = f.call(a).force
 
         [b, Exp.union(cs, ds)]
       }
     end
 
     def run
-      result = @thunk.call
+      result = force
       result[0]
     end
 
