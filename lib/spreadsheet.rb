@@ -72,11 +72,14 @@ module Spreadsheet
       @thunk.call
     end
 
-    def self.pure(v)
+    def self.return(v)
       Exp.new(-> { [v, []] })
     end
 
-    def and_then(f)
+    # Haskell uses >>= for monadic bind, but Ruby does not allow
+    # using that operator, so we just use something that looks like it
+    # instead. There should be no confusion with greater-than-or-equal.
+    def >=(f)
       Exp.new(
         lambda do
           a, cs = @thunk.call

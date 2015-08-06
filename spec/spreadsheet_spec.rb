@@ -4,79 +4,70 @@ describe Spreadsheet do
   Exp = Spreadsheet::Exp
 
   it 'updates a cell value based on two other cells' do
-    # Sorry about the horrible syntax.
-    # Using monads is painful in Ruby.
-    exp_of_three_cells =
-      Exp.pure(1).new_cell.and_then(
-      lambda do |a|
-        Exp.pure(2).new_cell.and_then(
-          lambda do |b|
-            a.exp.and_then(
-              lambda do |aValue|
-                b.exp.and_then(
-                  lambda do |bValue|
-                    Exp.pure(aValue + bValue)
-                  end
-                )
-              end
-            ).new_cell.and_then(
-              lambda do |c|
-                Exp.pure([a, b, c])
-              end
-            )
-          end
-        )
-      end
-    )
+    # Ruby does not have special syntax for monads.
+    #
+    # Haskell has special syntax, where since it infers the monad,
+    # the monad method `return` does not require qualification.
+    #
+    # exp_of_three_cells = do
+    #   a <- (return 1) & new_cell
+    #   b <- (return 2) & new_cell
+    #   c <- (do
+    #           aValue <- a & exp
+    #           bValue <- b & exp
+    #           return (aValue + bValue)
+    #        ) & new_cell
+    #   return (a, b, c)
+    exp_of_three_cells = Exp.return(1).new_cell >= ->(a) {
+      Exp.return(2).new_cell >= ->(b) {
+        (
+          a.exp >= ->(aValue) {
+            b.exp >= ->(bValue) {
+              Exp.return(aValue + bValue)
+            }
+          }
+        ).new_cell >= ->(c) {
+          Exp.return([a, b, c])
+        }
+      }
+    }
 
     a, b, c = exp_of_three_cells.run
 
     expect(c.exp.run).to eq(3)
 
-    a.exp = Exp.pure(100)
+    a.exp = Exp.return(100)
     expect(c.exp.run).to eq(102)
 
-    a.exp = b.exp.and_then(
-      lambda do |bValue|
-        Exp.pure(bValue * bValue)
-      end
-    )
-    b.exp = Exp.pure(4)
+    a.exp = b.exp >= ->(bValue) {
+      Exp.return(bValue * bValue)
+    }
+    b.exp = Exp.return(4)
 
     expect(c.exp.run).to eq(20)
   end
 
   it 'updates a cell value based on cells of other types' do
-    # Using monads is painful in Ruby.
-    exp_of_three_cells =
-      Exp.pure("hello").new_cell.and_then(
-      lambda do |a|
-        Exp.pure(2).new_cell.and_then(
-          lambda do |b|
-            a.exp.and_then(
-              lambda do |aValue|
-                b.exp.and_then(
-                  lambda do |bValue|
-                    Exp.pure(aValue.length + bValue)
-                  end
-                )
-              end
-            ).new_cell.and_then(
-              lambda do |c|
-                Exp.pure([a, b, c])
-              end
-            )
-          end
-        )
-      end
-    )
+    exp_of_three_cells = Exp.return("hello").new_cell >= ->(a) {
+      Exp.return(2).new_cell >= ->(b) {
+        (
+          a.exp >= ->(aValue) {
+            b.exp >= ->(bValue) {
+              Exp.return(aValue.length + bValue)
+            }
+          }
+        ).new_cell >= ->(c) {
+          Exp.return([a, b, c])
+        }
+      }
+    }
 
     a, b, c = exp_of_three_cells.run
 
     expect(c.exp.run).to eq(7)
 
-    b.exp = Exp.pure(3)
-    a.exp = Exp.pure("no")
+    b.exp = Exp.return(3)
+    a.exp = Exp.return("no")
     expect(c.exp.run).to eq(5)
   end
 

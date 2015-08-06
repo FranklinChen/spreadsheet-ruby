@@ -17,3 +17,40 @@ $ rake
 - [Scala](https://github.com/FranklinChen/spreadsheet-scala)
 - [Haskell](https://github.com/FranklinChen/spreadsheet-haskell)
 - [Ruby](https://github.com/FranklinChen/spreadsheet-ruby)
+
+## Implementation notes
+
+Ruby does not have types or module signatures (interfaces), so there
+is no equivalent to the OCaml [explicit module signature](https://github.com/FranklinChen/spreadsheet-ocaml/blob/master/src/Spreadsheet.ml)
+
+```ocaml
+module type CELL = sig
+  type 'a cell
+  type 'a exp
+
+  val return : 'a -> 'a exp
+  val (>>=) : 'a exp -> ('a -> 'b exp) -> 'b exp
+
+  val cell : 'a exp -> 'a cell exp
+
+  val get :  'a cell -> 'a exp
+  val set : 'a cell -> 'a exp -> unit
+
+  val run : 'a exp -> 'a
+end
+```
+
+OO-style is used, turning `Cell` and `Exp` into classes with
+methods. The public API is:
+
+- `Exp.return` creates an expression from an ordinary value.
+- `Exp.>=` is the monadic bind operator syntax I chose (we cannot
+  overload `>>=` as in OCaml).
+- `Exp.new_cell` creates a cell expression from an expression.
+- `Cell.exp` (corresponding to `get`) creates an expression from a cell.
+- `Cell.exp=` (corresponding to `set`) is Ruby syntactic sugar for setting a cell to a new expression.
+- `Exp.run` runs an expression.
+
+A globally unique dummy `Unevaluated` value is used to simulate the
+OCaml `option` type (`nil` is a bad choice because a cell could
+legitimately evaluate to `nil`).
