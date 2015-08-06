@@ -20,6 +20,8 @@ $ rake
 
 ## Implementation notes
 
+### API
+
 Ruby does not have types or module signatures (interfaces), so there
 is no equivalent to the OCaml [explicit module signature](https://github.com/FranklinChen/spreadsheet-ocaml/blob/master/src/Spreadsheet.ml)
 
@@ -54,3 +56,13 @@ methods. The public API is:
 A globally unique dummy `Unevaluated` value is used to simulate the
 OCaml `option` type (`nil` is a bad choice because a cell could
 legitimately evaluate to `nil`).
+
+### Object identity
+
+Instead of manually creating a unique ID for each cell for comparing
+object identity, we just use Ruby's built-in `equal?` method.
+
+### Heterogeneous list
+
+For keeping track of observers and reads, OCaml used an existential
+type. There is no such thing in Ruby and we just duck-type instead.

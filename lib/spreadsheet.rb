@@ -17,22 +17,20 @@ module Spreadsheet
 
     # Convert a Cell into an Expression.
     def exp
-      Exp.new(
-        lambda do
-          if @value.equal?(Unevaluated)
-            v, ds = @code.call
+      Exp.new -> {
+        if @value.equal?(Unevaluated)
+          v, ds = @code.call
 
-            @value = v
-            @reads = ds
+          @value = v
+          @reads = ds
 
-            ds.each { |d| d.observers << self }
+          ds.each { |d| d.observers << self }
 
-            [v, [self]]
-          else
-            [@value, [self]]
-          end
+          [v, [self]]
+        else
+          [@value, [self]]
         end
-      )
+      }
     end
 
     # Set a Cell to a different expression.
@@ -73,21 +71,19 @@ module Spreadsheet
     end
 
     def self.return(v)
-      Exp.new(-> { [v, []] })
+      Exp.new -> { [v, []] }
     end
 
     # Haskell uses >>= for monadic bind, but Ruby does not allow
     # using that operator, so we just use something that looks like it
     # instead. There should be no confusion with greater-than-or-equal.
     def >=(f)
-      Exp.new(
-        lambda do
-          a, cs = @thunk.call
-          b, ds = f.call(a).call
+      Exp.new -> {
+        a, cs = @thunk.call
+        b, ds = f.call(a).call
 
-          [b, Exp.union(cs, ds)]
-        end
-      )
+        [b, Exp.union(cs, ds)]
+      }
     end
 
     def run
@@ -97,15 +93,13 @@ module Spreadsheet
 
     # The only public way to create a new Cell.
     def new_cell
-      Exp.new(
-        lambda do
-          c = Cell.new(self,
-                       Unevaluated,
-                       [],
-                       [])
-          [c, []]
-        end
-      )
+      Exp.new -> {
+        c = Cell.new(self,
+                     Unevaluated,
+                     [],
+                     [])
+        [c, []]
+      }
     end
 
     # Utility function.
