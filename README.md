@@ -45,10 +45,11 @@ end
 OO-style is used, turning `Cell` and `Exp` into classes with
 methods. The public API is:
 
-- `Exp.return` creates an expression from an ordinary value.
+- `Exp.create` creates an expression from an ordinary value (`return`
+  is just too confusing a name).
 - `Exp.>=` is the monadic bind operator syntax I chose (we cannot
   overload `>>=` as in OCaml).
-- `Exp.new_cell` creates a cell expression from an expression.
+- `Exp.cell_exp` creates a cell expression from an expression.
 - `Cell.exp` (corresponding to `get`) creates an expression from a cell.
 - `Cell.exp=` (corresponding to `set`) is Ruby syntactic sugar for setting a cell to a new expression.
 - `Exp.run` runs an expression.

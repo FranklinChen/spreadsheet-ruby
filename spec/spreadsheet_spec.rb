@@ -10,24 +10,24 @@ describe Spreadsheet do
     # the monad method `return` does not require qualification.
     #
     # exp_of_three_cells = do
-    #   a <- (return 1) & new_cell
-    #   b <- (return 2) & new_cell
+    #   a <- (return 1) & cell_exp
+    #   b <- (return 2) & cell_exp
     #   c <- (do
     #           aValue <- a & exp
     #           bValue <- b & exp
     #           return (aValue + bValue)
-    #        ) & new_cell
+    #        ) & cell_exp
     #   return (a, b, c)
-    exp_of_three_cells = Exp.return(1).new_cell >= ->(a) {
-      Exp.return(2).new_cell >= ->(b) {
+    exp_of_three_cells = Exp.create(1).cell_exp >= ->(a) {
+      Exp.create(2).cell_exp >= ->(b) {
         (
           a.exp >= ->(aValue) {
             b.exp >= ->(bValue) {
-              Exp.return(aValue + bValue)
+              Exp.create(aValue + bValue)
             }
           }
-        ).new_cell >= ->(c) {
-          Exp.return([a, b, c])
+        ).cell_exp >= ->(c) {
+          Exp.create([a, b, c])
         }
       }
     }
@@ -36,28 +36,28 @@ describe Spreadsheet do
 
     expect(c.exp.run).to eq(3)
 
-    a.exp = Exp.return(100)
+    a.exp = Exp.create(100)
     expect(c.exp.run).to eq(102)
 
     a.exp = b.exp >= ->(bValue) {
-      Exp.return(bValue * bValue)
+      Exp.create(bValue * bValue)
     }
-    b.exp = Exp.return(4)
+    b.exp = Exp.create(4)
 
     expect(c.exp.run).to eq(20)
   end
 
   it 'updates a cell value based on cells of other types' do
-    exp_of_three_cells = Exp.return("hello").new_cell >= ->(a) {
-      Exp.return(2).new_cell >= ->(b) {
+    exp_of_three_cells = Exp.create("hello").cell_exp >= ->(a) {
+      Exp.create(2).cell_exp >= ->(b) {
         (
           a.exp >= ->(aValue) {
             b.exp >= ->(bValue) {
-              Exp.return(aValue.length + bValue)
+              Exp.create(aValue.length + bValue)
             }
           }
-        ).new_cell >= ->(c) {
-          Exp.return([a, b, c])
+        ).cell_exp >= ->(c) {
+          Exp.create([a, b, c])
         }
       }
     }
@@ -66,8 +66,8 @@ describe Spreadsheet do
 
     expect(c.exp.run).to eq(7)
 
-    b.exp = Exp.return(3)
-    a.exp = Exp.return("no")
+    b.exp = Exp.create(3)
+    a.exp = Exp.create("no")
     expect(c.exp.run).to eq(5)
   end
 
