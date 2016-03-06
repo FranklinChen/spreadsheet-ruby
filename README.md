@@ -1,6 +1,6 @@
 # Spreadsheet simulation in Ruby, translated from OCaml
 
-[![Build Status](https://travis-ci.org/FranklinChen/spreadsheet-Ruby.png)](https://travis-ci.org/FranklinChen/spreadsheet-Ruby)
+[![Build Status](https://travis-ci.org/FranklinChen/spreadsheet-ruby.png)](https://travis-ci.org/FranklinChen/spreadsheet-ruby)
 
 This is a Ruby translation of a highly imperative dataflow system given in ["How to implement a spreadsheet"](http://semantic-domain.blogspot.com/2015/07/how-to-implement-spreadsheet.html).
 
